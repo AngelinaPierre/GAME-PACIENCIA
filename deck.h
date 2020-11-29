@@ -124,6 +124,29 @@ int append_superior_deck(tp_deck *deck, int naipe, int valor){
 	return 1;
 }
 
+// APPEND BUYING DECK(DECK, NAIPE, VALOR):
+// Adiciona a carta ao fim do deck de compra
+int append_buying_deck(tp_deck *buying_deck, int naipe, int valor){
+	tp_card *new_card;
+	new_card = alloc_card();
+	if (!new_card) return 0;
+	new_card->naipe = naipe;
+	new_card->valor = valor;
+	
+	// Verifica se o deck de compra está vazio.
+	if((deck->start == NULL) && (deck->end == NULL)){
+		new_card->next = NULL;
+		new_card->prev = NULL;
+		buying_deck->start = buying_deck->end = new_card;
+	} else{
+		new_card->next = NULL;
+		new_card->prev = buying_deck->end;
+		buying_deck->end->next = new_card;
+		buying_deck->end = new_card;
+	}
+	return 1;
+}
+
 // SEARCH CARD(DECK, NAIPE, VALOR):
 // Procura a carta no deck com determinado valor.
 tp_card* search_card(tp_deck *deck, int naipe, int valor){   
@@ -132,6 +155,29 @@ tp_card* search_card(tp_deck *deck, int naipe, int valor){
   while((current_card != NULL) && (current_card->valor != valor) && (current_card->naipe != naipe)){ 
         current_card = current_card->next;}
   return current_card;
+}
+
+// POP DECK(DECK, NAIPE, VALOR)
+// Retira/Exclui uma carta do deck.
+int pop_deck(tp_deck *deck, int naipe, int valor){
+	tp_card *current_card;
+	current_card = deck->start;
+	while((current_card != NULL) && (current_card->naipe != naipe) && (current_card->valor != valor)){
+		current_card = current_card->next;
+	}
+	if(current_card == NULL) return 0;
+	if(deck->start == deck->end){
+		deck->start = deck->end = NULL;
+	} else if(deck->start == current_card){
+		current_card->next->prev = NULL;
+	} else if(deck->end == current_card){
+		current_card->prev->next = NULL;
+	} else{
+		current_card->next->prev = current_card->prev;
+		current_card->prev->next = current_card->next
+	}
+	free(current_card);
+	return 1;
 }
 
 // TRANSFER DECK(DECK REMETENTE, DECK DESTINATÁRIO, NAIPE, VALOR):
@@ -183,6 +229,23 @@ int transfer_deck(tp_deck *deck_remetente, tp_deck *deck_destinatario, int naipe
 	}
 	return 1;
 }
+
+// REFRESH(DECK)
+// Cicla as cartas disponíveis para compra.
+int refresh(tp_deck *buying_deck){
+	if(buying_deck->start->next->next == NULL){return 0;}
+	
+	int i;
+	for(i = 0; i < 3; i++){
+		tp_card *current_card;
+		current_card = buying_deck->start;
+		buying_deck->start = buying_deck->start->next;
+		buying_deck->start->prev = NULL;
+		append_buying_deck(buying_deck, current_card->naipe, current_card->valor);
+		free(current_card);
+	}
+	return 1;
+}	
 
 // DESTROY DECK(DECK):
 // Destrói o deck.
