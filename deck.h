@@ -3,13 +3,14 @@
 
 #include<stdio.h>
 #include<stdlib.h>
+#include<windows.h>
 
 // OBS: Os naipes estão separados por paridade de números e pela cor, assim, os naipes de mesma cor possuem mesma paridade de número.
 
-#define	COPAS 1;
-#define ESPADAS 2;
-#define OUROS 3;
-#define PAUS 4;
+#define	COPAS 1
+#define ESPADAS 2
+#define OUROS 3
+#define PAUS 4
 
 #define REI 13
 #define DAMA 12
@@ -25,6 +26,7 @@
 typedef struct card_aux{
 	int valor;
 	int naipe;
+	int visible;
 	card_aux *prev;
 	card_aux *next;
 } tp_card;
@@ -64,6 +66,15 @@ tp_card *init_card(int naipe, int valor){
 	new_card->valor = valor;
 	
 	return new_card;
+}
+
+// GO TO XY(COLUMN, LINE)
+// Posiciona o cursor na coordenada indicada.
+void gotoxy( int column, int line ){
+	COORD coord;
+	coord.X = column;
+	coord.Y = line;
+	SetConsoleCursorPosition(GetStdHandle( STD_OUTPUT_HANDLE ),coord);
 }
 
 // APPEND DECK(DECK, NAIPE, VALOR):
@@ -134,7 +145,7 @@ int append_buying_deck(tp_deck *buying_deck, int naipe, int valor){
 	new_card->valor = valor;
 	
 	// Verifica se o deck de compra está vazio.
-	if((deck->start == NULL) && (deck->end == NULL)){
+	if((buying_deck->start == NULL) && (buying_deck->end == NULL)){
 		new_card->next = NULL;
 		new_card->prev = NULL;
 		buying_deck->start = buying_deck->end = new_card;
@@ -162,19 +173,21 @@ tp_card* search_card(tp_deck *deck, int naipe, int valor){
 int pop_deck(tp_deck *deck, int naipe, int valor){
 	tp_card *current_card;
 	current_card = deck->start;
-	while((current_card != NULL) && (current_card->naipe != naipe) && (current_card->valor != valor)){
+	while((current_card != NULL) && !((current_card->naipe == naipe) && (current_card->valor == valor))){
 		current_card = current_card->next;
 	}
 	if(current_card == NULL) return 0;
 	if(deck->start == deck->end){
 		deck->start = deck->end = NULL;
 	} else if(deck->start == current_card){
+		deck->start = deck->start->next;
 		current_card->next->prev = NULL;
 	} else if(deck->end == current_card){
+		deck->end = deck->end->prev;
 		current_card->prev->next = NULL;
 	} else{
 		current_card->next->prev = current_card->prev;
-		current_card->prev->next = current_card->next
+		current_card->prev->next = current_card->next;
 	}
 	free(current_card);
 	return 1;
@@ -245,7 +258,91 @@ int refresh(tp_deck *buying_deck){
 		free(current_card);
 	}
 	return 1;
-}	
+}
+
+// PRINT CARD(NAIPE, VALOR)
+// Imprime a carta.
+void print_card(int naipe, int valor, int visible){
+	if(!visible){
+		printf("[@][@]");
+	} else{		
+		switch(valor){
+			case 1:
+				printf("[ACE]");
+				break;
+			case 2:
+			case 3:
+			case 4:
+			case 5:
+			case 6:
+			case 7:
+			case 8:
+			case 9:
+			case 10:
+				printf("[%d]", valor);
+				break;
+			case 11:
+				printf("[VALETE]");
+				break;
+			case 12:
+				printf("[DAMA]");
+				break;
+			case 13:
+				printf("[REI]");
+				break;
+			default:
+    	        printf("[ERRO]\n");
+    	        break;
+		}
+		switch(naipe){
+			case 1:
+    	        printf("[COPAS]\n");
+    	        break;
+    	    case 2:
+    	        printf("[ESPADAS]\n");
+    	        break;
+    	    case 3:
+    	        printf("[OUROS]\n");
+    	        break;
+    	    case 4:
+    	        printf("[PAUS]\n");
+    	        break;
+    	    default:
+    	        printf("[ERRO]\n");
+    	        break;
+		}
+	}
+}
+
+// PRINT DECK(DECK, COLUMN, LINE, ORDER)
+// Imprime o deck em determinada ordem e coordenada.
+void print_deck(tp_deck *deck, int column, int line, int order) {
+     tp_card *current_card;
+     int cont = 0;
+     
+     switch(order){
+        case 1: 
+			current_card = deck->start;
+            while (current_card != NULL) {
+            	gotoxy(column, line+cont);
+                print_card(current_card->naipe, current_card->valor, current_card->visible);
+                current_card = current_card->next;
+                cont++;
+            }
+            break;   
+        case 2: 
+			current_card = deck->end;
+            while (current_card != NULL) {
+            	gotoxy(column, line+cont);
+                print_card(current_card->naipe, current_card->valor, current_card->visible);
+                current_card = current_card->prev;
+				cont++;  
+            }
+            break;   
+        default: printf("codigo invalido");        
+     }
+     printf("\n");
+}
 
 // DESTROY DECK(DECK):
 // Destrói o deck.
@@ -260,5 +357,6 @@ tp_deck* destroy_deck (tp_deck *deck){
 	free(deck);
 	return NULL;
 }
+
 
 #endif
