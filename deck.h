@@ -86,75 +86,18 @@ int append_deck(tp_deck *deck, int naipe, int valor){
 	new_card->naipe = naipe;
 	new_card->valor = valor;
 	
-	// Verifica se o deck está vazio e se o valor da carta é o Rei.
-	if((deck->start == NULL) && (deck->end == NULL) && (new_card->valor == REI)){
-		new_card->next = NULL;
-		new_card->prev = NULL;
-		deck->start = deck->end = new_card;
-	} 
-	// Verifica se a carta possui naipe de cor invertida e valor antecessor à última carta do deck.
-	else if(new_card->naipe%2 != deck->end->naipe%2 && new_card->valor == deck->end->valor-1){
-		new_card->next = NULL;
-		new_card->prev = deck->end;
-		deck->end->next = new_card;
-		deck->end = new_card;
-	} else{
-		free(new_card);
-		return 0;
-	}
-	
-	return 1;
-}
-
-// APPEND SUPERIOR DECK(DECK, NAIPE, VALOR):
-// Adiciona a carta ao fim do deck superior
-int append_superior_deck(tp_deck *deck, int naipe, int valor){
-	tp_card *new_card;
-	new_card = alloc_card();
-	if (!new_card) return 0;
-	new_card->naipe = naipe;
-	new_card->valor = valor;
-	
-	// Verifica se o deck está vazio e se o valor da carta é o Ás.
-	if((deck->start == NULL) && (deck->end == NULL) && (new_card->valor == ACE)){
-		new_card->next = NULL;
-		new_card->prev = NULL;
-		deck->start = deck->end = new_card;
-	} 
-	// Verifica se a carta possui mesmo naipe e valor sucessor à última carta do deck.
-	else if(new_card->naipe == deck->end->naipe && new_card->valor == deck->end->valor+1){
-		new_card->next = NULL;
-		new_card->prev = deck->end;
-		deck->end->next = new_card;
-		deck->end = new_card;
-	} else{
-		free(new_card);
-		return 0;
-	}
-	
-	return 1;
-}
-
-// APPEND BUYING DECK(DECK, NAIPE, VALOR):
-// Adiciona a carta ao fim do deck de compra
-int append_buying_deck(tp_deck *buying_deck, int naipe, int valor){
-	tp_card *new_card;
-	new_card = alloc_card();
-	if (!new_card) return 0;
-	new_card->naipe = naipe;
-	new_card->valor = valor;
-	
 	// Verifica se o deck de compra está vazio.
-	if((buying_deck->start == NULL) && (buying_deck->end == NULL)){
+	if((deck->start == NULL) && (deck->end == NULL)){
 		new_card->next = NULL;
 		new_card->prev = NULL;
-		buying_deck->start = buying_deck->end = new_card;
+		deck->start = deck->end = new_card;
 	} else{
 		new_card->next = NULL;
-		new_card->prev = buying_deck->end;
-		buying_deck->end->next = new_card;
-		buying_deck->end = new_card;
+		new_card->prev = deck->end;
+		deck->end->next = new_card;
+		deck->end = new_card;
 	}
+	deck->end->visible = 1;
 	return 1;
 }
 
@@ -163,7 +106,7 @@ int append_buying_deck(tp_deck *buying_deck, int naipe, int valor){
 tp_card* search_card(tp_deck *deck, int naipe, int valor){   
   tp_card *current_card;
   current_card = deck->start;
-  while((current_card != NULL) && (current_card->valor != valor) && (current_card->naipe != naipe)){ 
+  while((current_card != NULL) && ((current_card->valor != valor) || (current_card->naipe != naipe))){ 
         current_card = current_card->next;}
   return current_card;
 }
@@ -193,53 +136,24 @@ int pop_deck(tp_deck *deck, int naipe, int valor){
 	return 1;
 }
 
+// DESTROY DECK(DECK):
+// Destrói o deck.
+tp_deck* destroy_deck (tp_deck *deck){   
+	tp_card *current_card;
+	current_card = deck->start;
+	while(current_card != NULL){ 
+        deck->start = current_card->next;
+        free(current_card);
+        current_card = deck->start;
+		}
+	free(deck);
+	return NULL;
+}
+
 // TRANSFER DECK(DECK REMETENTE, DECK DESTINATÁRIO, NAIPE, VALOR):
 // Transfere determinada fração do deck ou o deck completo para outro local.
 int transfer_deck(tp_deck *deck_remetente, tp_deck *deck_destinatario, int naipe, int valor){
-	tp_card *current_card;
-	tp_card *temp_card;
 	
-	current_card = search_card(deck_remetente, naipe, valor);
-	if(!current_card){
-		return 0;
-	}
-	// Verifica se a sequência é possível de ser transferida
-	temp_card = current_card;
-	// Procura por alguma irregularidade. Caso não haja, retorna a possibilidade.
-	while(!temp_card->next){
-		if(temp_card->naipe%2 == temp_card->next->naipe%2 && temp_card->valor != temp_card->next->valor+1){
-			return 0;
-		} else{
-			temp_card = temp_card->next;
-		}
-	}
-	// Verifica se a carta é Rei e se o deck destinatário é vazio.
-	if(current_card->valor == REI && deck_destinatario->start == NULL){
-		// Guarda a última carta do deck em uma variável temporária.
-		temp_card = deck_remetente->end;
-		deck_remetente->end = current_card->prev;
-		// Transfere o fragmento para o deck destinatário.
-		if(!current_card->prev){
-			current_card->prev->next == NULL;
-		}
-		deck_destinatario->start = current_card;
-		deck_destinatario->end = temp_card;
-	}
-	// Verifica se a carta possui naipe de cor invertida e valor antecessor à última carta do deck.
-	else if(current_card->naipe%2 != deck_destinatario->end->naipe%2 && current_card->valor == deck_destinatario->end->valor-1){
-		// Guarda a última carta do deck em uma variável temporária.
-		temp_card = deck_remetente->end;
-		deck_remetente->end = current_card->prev;
-		// Transfere o fragmento para o deck destinatário.
-		if(!current_card->prev){
-			current_card->prev->next == NULL;
-		}
-		current_card->prev = deck_destinatario->end;
-		deck_destinatario->end->next = current_card;
-		deck_destinatario->end = temp_card;
-	} else{
-		return 0;
-	}
 	return 1;
 }
 
@@ -254,7 +168,7 @@ int refresh(tp_deck *buying_deck){
 		current_card = buying_deck->start;
 		buying_deck->start = buying_deck->start->next;
 		buying_deck->start->prev = NULL;
-		append_buying_deck(buying_deck, current_card->naipe, current_card->valor);
+		append_deck(buying_deck, current_card->naipe, current_card->valor);
 		free(current_card);
 	}
 	return 1;
@@ -343,20 +257,5 @@ void print_deck(tp_deck *deck, int column, int line, int order) {
      }
      printf("\n");
 }
-
-// DESTROY DECK(DECK):
-// Destrói o deck.
-tp_deck* destroy_deck (tp_deck *deck){   
-	tp_card *current_card;
-	current_card = deck->start;
-	while(current_card != NULL){ 
-        deck->start = current_card->next;
-        free(current_card);
-        current_card = deck->start;
-		}
-	free(deck);
-	return NULL;
-}
-
 
 #endif

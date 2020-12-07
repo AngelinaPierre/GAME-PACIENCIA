@@ -29,7 +29,7 @@ int start_game(tp_deck *buying_deck, tp_deck *table_deck[]){
 	
 	for(i = 0; i < 52; i++){
 		choose =  rand()%rand_size;
-		append_buying_deck(buying_deck, card_naipes[choose], card_valores[choose]);
+		append_deck(buying_deck, card_naipes[choose], card_valores[choose]);
 		buying_deck->end->visible = 1;
 		
 		aux = card_naipes[choose];
@@ -46,7 +46,7 @@ int start_game(tp_deck *buying_deck, tp_deck *table_deck[]){
 	
 	for(i = 0; i < 7; i++){
 		for(j = 0; j <= i; j++){
-			append_buying_deck(table_deck[i], buying_deck->end->naipe, buying_deck->end->valor);
+			append_deck(table_deck[i], buying_deck->end->naipe, buying_deck->end->valor);
 			table_deck[i]->end->visible = 1;
 			pop_deck(buying_deck, buying_deck->end->naipe, buying_deck->end->valor);
 		}
@@ -128,10 +128,114 @@ void choose_options(int *response){
 	scanf("%d", response);
 }
 
+void buy(tp_deck *buying_deck, tp_deck *table_deck[], tp_deck *conclusion_deck[], int option, int dest_deck){
+	if(option == 1 && dest_deck >= 0 && dest_deck < 4){
+		if(conclusion_deck[dest_deck]->start == NULL || conclusion_deck[dest_deck]->end == NULL){
+		// Caso o deck esteja vazio e a carta for ÁS.
+			if(buying_deck->start->valor == ACE){
+				append_deck(conclusion_deck[dest_deck], buying_deck->start->naipe, buying_deck->start->valor);
+				pop_deck(buying_deck, buying_deck->start->naipe, buying_deck->start->valor);
+				printf("Concluído!\n");
+				system("pause");
+			} else{
+				printf("\nAção inválida!!\n");
+				system("pause");
+			}
+		// Caso o deck tenha valor e a carta seja a sucessora.	
+		} else if(conclusion_deck[dest_deck]->end->naipe == buying_deck->start->naipe && conclusion_deck[dest_deck]->end->valor == buying_deck->start->valor-1){
+			append_deck(conclusion_deck[dest_deck], buying_deck->start->naipe, buying_deck->start->valor);
+			pop_deck(buying_deck, buying_deck->start->naipe, buying_deck->start->valor);
+			printf("Concluído!\n");
+			system("pause");
+		} else{
+			printf("\nAção inválida!!\n");
+			system("pause");
+		}
+	}
+	// Verificando o caso deck de mesa.
+	else if(option == 2 && dest_deck >= 0 && dest_deck < 7){
+		if(table_deck[dest_deck]->start == NULL || table_deck[dest_deck]->end == NULL){
+			// Caso o deck esteja vazio e a carta for REI.
+			if(buying_deck->start->valor == REI){
+				append_deck(table_deck[dest_deck], buying_deck->start->naipe, buying_deck->start->valor);
+				pop_deck(buying_deck, buying_deck->start->naipe, buying_deck->start->valor);
+				printf("Concluído!\n");
+				system("pause");
+			} else{
+				printf("\nAção inválida!!\n");
+				system("pause");
+			}
+		// Caso o deck tenha valor e a carta seja a sucessora.	
+		} else if(table_deck[dest_deck]->end->naipe%2 != buying_deck->start->naipe%2 && table_deck[dest_deck]->end->valor == buying_deck->start->valor+1){
+			append_deck(table_deck[dest_deck], buying_deck->start->naipe, buying_deck->start->valor);
+			pop_deck(buying_deck, buying_deck->start->naipe, buying_deck->start->valor);
+			printf("Concluído!\n");
+			system("pause");
+		} else{
+			printf("\nAção inválida!!\n");
+			system("pause");
+		}
+	}
+	else{
+		printf("\nOpção inválida!!\n");
+		system("pause");
+	}
+}
+
+void transference(tp_deck *buying_deck, tp_deck *table_deck[], tp_deck *conclusion_deck[], int option, int orig_deck, int dest_deck){
+	
+}
+
+
 void controller(tp_deck *buying_deck, tp_deck *table_deck[], tp_deck *conclusion_deck[], int option){
+	int option_deck, orig_deck, dest_deck;
+	
 	switch(option){
 		case 1:
+			// Atualiza.
 			refresh(buying_deck);
+			break;
+		case 2:
+			// Solicitando o tipo de compra.
+			system("cls");
+			show_table(buying_deck, table_deck, conclusion_deck);
+			printf("Escolha o tipo do deck destinatário:\n1 - Deck de conclusão\n2 - Deck de mesa\n\n");
+			scanf("%d", &option_deck);
+			
+			// Solicitando o deck destinatário
+			system("cls");
+			show_table(buying_deck, table_deck, conclusion_deck);
+			printf("Escolha o deck destinatário:\n\n");
+			scanf("%d", &dest_deck);
+			dest_deck--;
+			
+			// Verificando o caso deck de conclusão.
+			buy(buying_deck, table_deck, conclusion_deck, option_deck, dest_deck);
+			break;
+		case 3:
+			
+			// Solicitando o tipo de transferência.
+			system("cls");
+			show_table(buying_deck, table_deck, conclusion_deck);
+			printf("Escolha o tipo do deck destinatário:\n1 - Deck de conclusão\n2 - Deck de mesa\n\n");
+			scanf("%d", &option_deck);
+			
+			// Solicitando o deck remetente.
+			system("cls");
+			show_table(buying_deck, table_deck, conclusion_deck);
+			printf("Escolha o deck remetente:\n\n");
+			scanf("%d", &orig_deck);
+			orig_deck--;
+			
+			// Solicitando o deck destinatário
+			system("cls");
+			show_table(buying_deck, table_deck, conclusion_deck);
+			printf("Escolha o deck destinatário:\n\n");
+			scanf("%d", &dest_deck);
+			dest_deck--;
+			
+			transference(buying_deck, table_deck, conclusion_deck, option_deck, orig_deck, dest_deck);
+			
 			break;
 		default:
 			printf("ERRO\n");
