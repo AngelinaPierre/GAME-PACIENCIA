@@ -150,8 +150,8 @@ tp_deck* destroy_deck (tp_deck *deck){
 	return NULL;
 }
 
-// TRANSFER DECK(DECK REMETENTE, DECK DESTINATÁRIO, NAIPE, VALOR):
-// Transfere determinada fração do deck ou o deck completo para outro local.
+// AVAILABLE TRANSFER(DECK, NAIPE, VALOR):
+// Verifica se a partição gerada a partir da carta fornecida é disponível para transferência.
 int available_transfer(tp_deck *deck, int naipe, int valor){
 	tp_card *current_card;
 	tp_card *running_card;
@@ -189,7 +189,8 @@ int refresh(tp_deck *buying_deck){
 // Imprime a carta.
 void print_card(int naipe, int valor, int visible){
 	if(!visible){
-		printf("[@][@]");
+		// Caso a carta não seja visível.
+		printf("[@@][@@@@]");
 	} else{		
 		switch(valor){
 			case 1:

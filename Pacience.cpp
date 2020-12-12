@@ -1,3 +1,10 @@
+/*
+* ALGORÍTMO E ESTRUTURA DE DADOS 1
+* PACIÊNCIA
+* ALUNO: Alec Santos.
+* CURSO: Engenharia de Computação.
+* TURMA: 
+*/
 #include<stdio.h>
 #include<stdlib.h>
 #include<locale.h>
@@ -7,23 +14,36 @@
 int main(){
 	int response;
 	
+	// Ativa os caracteres da lingua portuguesa.
 	setlocale(LC_ALL, "Portuguese");
+	// Recomendação de inicialização.
 	printf("Ponha em tela cheia antes\n");
 	system("pause");
 	
+	// Declaração de decks.
 	tp_deck *buying_deck;
 	tp_deck *table_deck[7];
 	tp_deck *conclusion_deck[4];
 	
+	// Inicialização de decks.
 	buying_deck = init_deck();
 	for(int i = 0; i<7; i++){
 		if(i<4){conclusion_deck[i] = init_deck();}
 		table_deck[i] = init_deck();
 	}
 	
+	// Atribuição de valores dos decks.
 	start_game(buying_deck, table_deck);
 	
+	// Execução do jogo.
 	while(true){
+		if(finalize(conclusion_deck)){
+			system("cls");
+			show_table(buying_deck, table_deck, conclusion_deck);
+			printf("PARABÉNS, VOCÊ CONCLUIU O JOGO\n");
+			system("pause");
+			break;
+		}
 		while(true){
 			system("cls");
 			show_table(buying_deck, table_deck, conclusion_deck);
@@ -35,7 +55,7 @@ int main(){
 		controller(buying_deck, table_deck, conclusion_deck, response);
 	}
 	
-	
+	// Finalização do jogo.
 	destroy_deck(buying_deck);
 	for(int i = 0; i<7; i++){
 		if(i<4){destroy_deck(conclusion_deck[i]);}
