@@ -152,7 +152,18 @@ tp_deck* destroy_deck (tp_deck *deck){
 
 // TRANSFER DECK(DECK REMETENTE, DECK DESTINATÁRIO, NAIPE, VALOR):
 // Transfere determinada fração do deck ou o deck completo para outro local.
-int transfer_deck(tp_deck *deck_remetente, tp_deck *deck_destinatario, int naipe, int valor){
+int available_transfer(tp_deck *deck, int naipe, int valor){
+	tp_card *current_card;
+	tp_card *running_card;
+	
+	if(deck->start == NULL && deck->end == NULL){return 0;}
+	current_card = search_card(deck, naipe, valor);
+	if(current_card == NULL){return 0;}
+	running_card = current_card;
+	while(running_card->next != NULL){
+		if(running_card->next->naipe%2 == running_card->naipe%2 || running_card->next->valor != running_card->valor-1){return 0;}
+		running_card = running_card->next;
+	}
 	
 	return 1;
 }

@@ -183,9 +183,120 @@ void buy(tp_deck *buying_deck, tp_deck *table_deck[], tp_deck *conclusion_deck[]
 }
 
 void transference(tp_deck *buying_deck, tp_deck *table_deck[], tp_deck *conclusion_deck[], int option, int orig_deck, int dest_deck){
+	tp_deck *trade_deck;
+	trade_deck = init_deck();
 	
+	if(option == 1){
+		if(orig_deck >= 0 && orig_deck < 7 && dest_deck >= 0 && dest_deck < 4){
+			if(conclusion_deck[dest_deck]->start == NULL && table_deck[orig_deck]->end->valor == ACE){
+				append_deck(conclusion_deck[dest_deck], table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
+				pop_deck(table_deck[orig_deck], table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
+				printf("Concluído!\n");
+				system("pause");
+			}
+			else if(conclusion_deck[dest_deck]->end->naipe == table_deck[orig_deck]->end->naipe && conclusion_deck[dest_deck]->end->valor == table_deck[orig_deck]->end->valor-1){
+				append_deck(conclusion_deck[dest_deck], table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
+				pop_deck(table_deck[orig_deck], table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
+				printf("Concluído!\n");
+				system("pause");
+			} else{
+				printf("\nAção inválida!!\n");
+				system("pause");
+			}
+		} else{
+			printf("\nAção inválida!!\n");
+			system("pause");
+		}
+	}
+	else if(option == 2){
+		int partition_naipe, partition_valor;
+		
+		system("cls");
+		show_table(buying_deck, table_deck, conclusion_deck);
+		printf("Escolha o naipe da carta para partição:\n1 = [COPAS] || 2 = [ESPADAS] || 3 = [OUROS] || 4 = [PAUS]\n\n");
+		scanf("%d", &partition_naipe);
+		
+		system("cls");
+		show_table(buying_deck, table_deck, conclusion_deck);
+		printf("Escolha o valor da carta para partição:\n1 = [ACE] || 11 = [VALETE] || 12 = [DAMA] || 13 = [REI]\n\n");
+		scanf("%d", &partition_valor);
+		
+		
+		if(orig_deck >= 0 && orig_deck < 7 && dest_deck >= 0 && dest_deck < 7){
+			if(!available_transfer(table_deck[orig_deck], partition_naipe, partition_valor)){
+				printf("\nAção inválida!!\n");
+				system("pause");
+			}
+			else if(table_deck[dest_deck]->start == NULL && partition_valor == REI){
+				
+				while(table_deck[orig_deck]->end->naipe != partition_naipe || table_deck[orig_deck]->end->valor != partition_valor){
+					append_deck(trade_deck, table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
+					pop_deck(table_deck[orig_deck], table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
+				}
+				
+				append_deck(trade_deck, table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
+				pop_deck(table_deck[orig_deck], table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
+				
+				while(trade_deck->start != NULL){
+					append_deck(table_deck[dest_deck], trade_deck->end->naipe, trade_deck->end->valor);
+					pop_deck(trade_deck, trade_deck->end->naipe, trade_deck->end->valor);
+				}
+				printf("Concluído!\n");
+				system("pause");
+			}
+			else if(table_deck[dest_deck]->end->naipe%2 != partition_naipe%2 && table_deck[dest_deck]->end->valor == partition_valor+1){
+				while(table_deck[orig_deck]->end->naipe != partition_naipe || table_deck[orig_deck]->end->valor != partition_valor){
+					append_deck(trade_deck, table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
+					pop_deck(table_deck[orig_deck], table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
+				}
+				
+				append_deck(trade_deck, table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
+				pop_deck(table_deck[orig_deck], table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
+				
+				while(trade_deck->start != NULL){
+					append_deck(table_deck[dest_deck], trade_deck->end->naipe, trade_deck->end->valor);
+					pop_deck(trade_deck, trade_deck->end->naipe, trade_deck->end->valor);
+				}
+				printf("Concluído!\n");
+				system("pause");
+			} else{
+				printf("\nAção inválida!!\n");
+				system("pause");
+			}
+		} else{
+			printf("\nAção inválida!!\n");
+			system("pause");
+		}
+	}
+	else{
+		printf("\nAção inválida!!\n");
+		system("pause");
+	}
+	
+	destroy_deck(trade_deck);
 }
 
+void pop_conclusion_deck(tp_deck *table_deck[], tp_deck *conclusion_deck[], int orig_deck, int dest_deck){
+	if(orig_deck >= 0 && orig_deck < 4 && dest_deck >= 0 && dest_deck < 7){
+		if(table_deck[dest_deck]->end == NULL && conclusion_deck[orig_deck]->end->valor == REI){
+			append_deck(table_deck[dest_deck], conclusion_deck[orig_deck]->end->naipe, conclusion_deck[orig_deck]->end->valor);
+			pop_deck(conclusion_deck[orig_deck], conclusion_deck[orig_deck]->end->naipe, conclusion_deck[orig_deck]->end->valor);
+			printf("Concluído!\n");
+			system("pause");
+		} else if(conclusion_deck[orig_deck]->end->naipe%2 != table_deck[dest_deck]->end->naipe%2 && conclusion_deck[orig_deck]->end->valor == table_deck[dest_deck]->end->valor-1){
+			append_deck(table_deck[dest_deck], conclusion_deck[orig_deck]->end->naipe, conclusion_deck[orig_deck]->end->valor);
+			pop_deck(conclusion_deck[orig_deck], conclusion_deck[orig_deck]->end->naipe, conclusion_deck[orig_deck]->end->valor);
+			printf("Concluído!\n");
+			system("pause");
+		}else{
+			printf("\nAção inválida!!\n");
+			system("pause");
+		}
+	} else{
+		printf("\nAção inválida!!\n");
+		system("pause");
+	}
+}
 
 void controller(tp_deck *buying_deck, tp_deck *table_deck[], tp_deck *conclusion_deck[], int option){
 	int option_deck, orig_deck, dest_deck;
@@ -235,6 +346,24 @@ void controller(tp_deck *buying_deck, tp_deck *table_deck[], tp_deck *conclusion
 			dest_deck--;
 			
 			transference(buying_deck, table_deck, conclusion_deck, option_deck, orig_deck, dest_deck);
+			
+			break;
+		case 4:
+			
+			system("cls");
+			show_table(buying_deck, table_deck, conclusion_deck);
+			printf("Escolha o deck remetente:\n\n");
+			scanf("%d", &orig_deck);
+			orig_deck--;
+			
+			// Solicitando o deck destinatário
+			system("cls");
+			show_table(buying_deck, table_deck, conclusion_deck);
+			printf("Escolha o deck destinatário:\n\n");
+			scanf("%d", &dest_deck);
+			dest_deck--;
+			
+			pop_conclusion_deck(table_deck, conclusion_deck, orig_deck, dest_deck);
 			
 			break;
 		default:
