@@ -37,13 +37,6 @@ int main(){
 	
 	// Execução do jogo.
 	while(true){
-		if(finalize(conclusion_deck)){
-			system("cls");
-			show_table(buying_deck, table_deck, conclusion_deck);
-			printf("PARABÉNS, VOCÊ CONCLUIU O JOGO\n");
-			system("pause");
-			break;
-		}
 		while(true){
 			system("cls");
 			show_table(buying_deck, table_deck, conclusion_deck);
@@ -52,8 +45,14 @@ int main(){
 			else{printf("Escolha inválida!\n"); system("pause");}
 		}
 		if(response == 5){break;}
+		if(finalize(conclusion_deck)){break;}
 		controller(buying_deck, table_deck, conclusion_deck, response);
 	}
+	
+	system("cls");
+	show_table(buying_deck, table_deck, conclusion_deck);
+	gotoxy((MAX_COLUMN/2)-8, MAX_LINE+2);
+	printf("JOGO FINALIZADO!\n");
 	
 	// Finalização do jogo.
 	destroy_deck(buying_deck);

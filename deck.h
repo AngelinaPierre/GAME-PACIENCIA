@@ -161,7 +161,7 @@ int available_transfer(tp_deck *deck, int naipe, int valor){
 	if(current_card == NULL){return 0;}
 	running_card = current_card;
 	while(running_card->next != NULL){
-		if(running_card->next->naipe%2 == running_card->naipe%2 || running_card->next->valor != running_card->valor-1){return 0;}
+		if(running_card->next->naipe%2 == running_card->naipe%2 || running_card->next->valor != running_card->valor-1 || running_card->visible == 0){return 0;}
 		running_card = running_card->next;
 	}
 	
@@ -243,11 +243,11 @@ void print_card(int naipe, int valor, int visible){
 // PRINT DECK(DECK, COLUMN, LINE, ORDER)
 // Imprime o deck em determinada ordem e coordenada.
 void print_deck(tp_deck *deck, int column, int line, int order) {
-     tp_card *current_card;
-     int cont = 0;
+    tp_card *current_card;
+    int cont = 0;
      
-     switch(order){
-        case 1: 
+    switch(order){
+     	case 1: 
 			current_card = deck->start;
             while (current_card != NULL) {
             	gotoxy(column, line+cont);
@@ -256,7 +256,7 @@ void print_deck(tp_deck *deck, int column, int line, int order) {
                 cont++;
             }
             break;   
-        case 2: 
+   	    case 2: 
 			current_card = deck->end;
             while (current_card != NULL) {
             	gotoxy(column, line+cont);
@@ -266,8 +266,8 @@ void print_deck(tp_deck *deck, int column, int line, int order) {
             }
             break;   
         default: printf("codigo invalido");        
-     }
-     printf("\n");
+    }
+    printf("\n");
 }
 
 #endif

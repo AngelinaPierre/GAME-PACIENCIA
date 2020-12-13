@@ -31,9 +31,9 @@ int start_game(tp_deck *buying_deck, tp_deck *table_deck[]){
 	
 	// Tornando os valores aleatórios e adicionando todas as cartas ao deck de compra.
 	for(i = 0; i < 52; i++){
-		choose =  rand()%rand_size;
+		choose = rand()%rand_size;
 		append_deck(buying_deck, card_naipes[choose], card_valores[choose]);
-		buying_deck->end->visible = 0;
+		buying_deck->end->visible = 1;
 		
 		aux = card_naipes[choose];
 		card_naipes[choose] = card_naipes[51-i];
@@ -106,7 +106,12 @@ int print_buying_deck(tp_deck *buying_deck){
 void print_table_deck(tp_deck *table_deck[]){
 	// Imprimindo o deck em casa posição.
 	for(int i = 0; i < 7; i++){
-		print_deck(table_deck[i], 2+(20*i), 11, 1);
+		if(!table_deck[i]->end){
+			gotoxy(2+(20*i), 11);
+			printf("[VAZIO]");
+		} else{
+			print_deck(table_deck[i], 2+(20*i), 11, 1);
+		}
 	}
 	gotoxy(0, MAX_LINE);
 }
@@ -127,7 +132,7 @@ void print_conclusion_deck(tp_deck *conclusion_deck[]){
 // Transforma a última carta de cada deck de mesa visível.
 void turn_end_visible(tp_deck *table_deck[]){
 	for(int i = 0; i < 7; i++){
-		table_deck[i]->end->visible = 1;
+		if(table_deck[i]->start != NULL){table_deck[i]->end->visible = 1;}
 	}
 }
 
@@ -283,23 +288,29 @@ void transference(tp_deck *buying_deck, tp_deck *table_deck[], tp_deck *conclusi
 				printf("\nAção inválida!!\n");
 				system("pause");
 			}
-			// Verifica se o deck destinatário está vazio e se o a carta do topo da partição é REI.
-			else if(table_deck[dest_deck]->start == NULL && partition_valor == REI){
-				// Transfere as cartas para um deck auxiliar de troca (trade deck).
-				while(table_deck[orig_deck]->end->naipe != partition_naipe || table_deck[orig_deck]->end->valor != partition_valor){
+			// Verifica se o deck destinatário está vazio. e se o a carta do topo da partição é REI.
+			else if(table_deck[dest_deck]->start == NULL){
+				// Verifica se a carta do topo da partição é REI.
+				if(partition_valor == REI){
+					// Transfere as cartas para um deck auxiliar de troca (trade deck).
+					while(table_deck[orig_deck]->end->naipe != partition_naipe || table_deck[orig_deck]->end->valor != partition_valor){
+						append_deck(trade_deck, table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
+						pop_deck(table_deck[orig_deck], table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
+					}
+					// Transfere a última carta para o deck auxiliar de troca.
 					append_deck(trade_deck, table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
 					pop_deck(table_deck[orig_deck], table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
+					// Transfere as cartas do deck auxiliar de troca para o deck destinatário.
+					while(trade_deck->start != NULL){
+						append_deck(table_deck[dest_deck], trade_deck->end->naipe, trade_deck->end->valor);
+						pop_deck(trade_deck, trade_deck->end->naipe, trade_deck->end->valor);
+					}
+					printf("Concluído!\n");
+					system("pause");
+				} else{
+					printf("\nAção inválida!!\n");
+					system("pause");
 				}
-				// Transfere a última carta para o deck auxiliar de troca.
-				append_deck(trade_deck, table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
-				pop_deck(table_deck[orig_deck], table_deck[orig_deck]->end->naipe, table_deck[orig_deck]->end->valor);
-				// Transfere as cartas do deck auxiliar de troca para o deck destinatário.
-				while(trade_deck->start != NULL){
-					append_deck(table_deck[dest_deck], trade_deck->end->naipe, trade_deck->end->valor);
-					pop_deck(trade_deck, trade_deck->end->naipe, trade_deck->end->valor);
-				}
-				printf("Concluído!\n");
-				system("pause");
 			}
 			// Verifica se a carta do topo da partição é sucessora na sequência do deck destinatário.
 			else if(table_deck[dest_deck]->end->naipe%2 != partition_naipe%2 && table_deck[dest_deck]->end->valor == partition_valor+1){
@@ -346,12 +357,17 @@ void pop_conclusion_deck(tp_deck *table_deck[], tp_deck *conclusion_deck[], int 
 	// Verifica se os decks escolhidos são válidos.
 	if(orig_deck >= 0 && orig_deck < 4 && dest_deck >= 0 && dest_deck < 7){
 		// Verifica se o deck destinatário está vazio e se a carta a ser transferida é REI.
-		if(table_deck[dest_deck]->end == NULL && conclusion_deck[orig_deck]->end->valor == REI){
+		if(table_deck[dest_deck]->end == NULL){
 			// Transfere a carta.
-			append_deck(table_deck[dest_deck], conclusion_deck[orig_deck]->end->naipe, conclusion_deck[orig_deck]->end->valor);
-			pop_deck(conclusion_deck[orig_deck], conclusion_deck[orig_deck]->end->naipe, conclusion_deck[orig_deck]->end->valor);
-			printf("Concluído!\n");
-			system("pause");
+			if(conclusion_deck[orig_deck]->end->valor == REI){
+				append_deck(table_deck[dest_deck], conclusion_deck[orig_deck]->end->naipe, conclusion_deck[orig_deck]->end->valor);
+				pop_deck(conclusion_deck[orig_deck], conclusion_deck[orig_deck]->end->naipe, conclusion_deck[orig_deck]->end->valor);
+				printf("Concluído!\n");
+				system("pause");
+			} else{
+				printf("\nAção inválida!!\n");
+				system("pause");
+			}
 		}
 		// Verifica se a carta a ser transferida é a sucessiva na sequência do deck de conclusão.
 		else if(conclusion_deck[orig_deck]->end->naipe%2 != table_deck[dest_deck]->end->naipe%2 && conclusion_deck[orig_deck]->end->valor == table_deck[dest_deck]->end->valor-1){
@@ -454,7 +470,8 @@ void controller(tp_deck *buying_deck, tp_deck *table_deck[], tp_deck *conclusion
 }
 
 int finalize(tp_deck *conclusion_deck[]){
-	if(conclusion_deck[0]->end->valor == REI && conclusion_deck[1]->end->valor == REI && conclusion_deck[2]->end->valor == REI && conclusion_deck[3]->end->valor == REI)
+	if(!conclusion_deck[0]->end || !conclusion_deck[1]->end || !conclusion_deck[2]->end || !conclusion_deck[3]->end){ return 0;}
+	else if(conclusion_deck[0]->end->valor == REI && conclusion_deck[1]->end->valor == REI && conclusion_deck[2]->end->valor == REI && conclusion_deck[3]->end->valor == REI)
 	{
 		return 1;
 	}
