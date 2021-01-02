@@ -61,4 +61,6 @@ int main(){
 		destroy_deck(table_deck[i]);
 	}
 	return 0;
+	
+	// testando github.
 }
